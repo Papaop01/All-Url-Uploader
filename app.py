@@ -71,8 +71,8 @@ async def run() -> None:
         settings.process_max_timeout,
     )
     health_task = asyncio.create_task(_health_server())
-try:
-    await dispatcher.start_polling(bot)
-finally:
-    health_task.cancel()
+    try:
+        await dispatcher.start_polling(bot)
+    finally:
+        health_task.cancel()
 
