@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import logging
+import os
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiohttp import web
 
 from config import Settings
 from utils.logging_config import setup_logging
@@ -31,6 +34,23 @@ def create_dispatcher(settings: Settings) -> Dispatcher:
     )
     return dispatcher
 
+async def _health_server() -> None:
+    async def ok(request: web.Request) -> web.Response:
+        return web.Response(text="ok")
+
+    app = web.Application()
+    app.router.add_get("/", ok)
+    port = int(os.environ.get("PORT", "10000"))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    await web.TCPSite(runner, "0.0.0.0", port).start()
+    logging.getLogger(__name__).info("Health server listening on 0.0.0.0:%s", port)
+    try:
+        await asyncio.Event().wait()
+    finally:
+        await runner.cleanup()
+
+
 
 async def run() -> None:
     setup_logging()
@@ -50,4 +70,9 @@ async def run() -> None:
         "enabled" if settings.http_proxy else "disabled",
         settings.process_max_timeout,
     )
+    health_task = asyncio.create_task(_health_server())
+try:
     await dispatcher.start_polling(bot)
+finally:
+    health_task.cancel()
+
