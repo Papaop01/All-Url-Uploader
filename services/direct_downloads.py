@@ -49,9 +49,13 @@ async def download_direct_file(
     suggested_ext: str | None = None,
 ) -> DownloadArtifact:
     work_dir.mkdir(parents=True, exist_ok=True)
-    file_name = parsed_input.custom_file_name or _filename_from_url(
-        parsed_input.source_url
-    )
+    raw_name = parsed_input.custom_file_name or _filename_from_url(
+    parsed_input.source_url
+)
+# Keep only the base name so "../" tricks can't escape the download folder
+base_name = Path(raw_name.replace("\\", "/")).name
+file_name = base_name if base_name not in ("", ".", "..") else "downloaded-file"
+
     logger.info(
         "Direct download starting | source=%s send_type=%s work_dir=%s",
         safe_url_label(parsed_input.source_url),
@@ -69,6 +73,9 @@ async def download_direct_file(
             response.raise_for_status()
             content_type = response.headers.get("Content-Type", "")
             ext = option.file_ext or suggested_ext
+if ext and ext.lower() in {"unknown_video", "unknown_audio"}:
+    ext = None
+
             if not ext:
                 guessed_ext = mimetypes.guess_extension(
                     content_type.split(";")[0].strip()
