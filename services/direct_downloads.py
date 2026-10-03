@@ -52,9 +52,9 @@ async def download_direct_file(
     raw_name = parsed_input.custom_file_name or _filename_from_url(
     parsed_input.source_url
 )
-# Keep only the base name so "../" tricks can't escape the download folder
-base_name = Path(raw_name.replace("\\", "/")).name
-file_name = base_name if base_name not in ("", ".", "..") else "downloaded-file"
+    # Keep only the base name so "../" tricks can't escape the download folder
+    base_name = Path(raw_name.replace("\\", "/")).name
+    file_name = base_name if base_name not in ("", ".", "..") else "downloaded-file"
 
     logger.info(
         "Direct download starting | source=%s send_type=%s work_dir=%s",
@@ -73,8 +73,8 @@ file_name = base_name if base_name not in ("", ".", "..") else "downloaded-file"
             response.raise_for_status()
             content_type = response.headers.get("Content-Type", "")
             ext = option.file_ext or suggested_ext
-if ext and ext.lower() in {"unknown_video", "unknown_audio"}:
-    ext = None
+            if ext and ext.lower() in {"unknown_video", "unknown_audio"}:
+                ext = None
 
             if not ext:
                 guessed_ext = mimetypes.guess_extension(
