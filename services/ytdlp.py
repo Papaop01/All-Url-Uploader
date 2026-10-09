@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def _command_base(parsed_input: ParsedInput, settings: Settings) -> list[str]:
-    command = ["yt-dlp", "--no-warnings"]
+    command = ["yt-dlp", "--no-warnings", "--trim-filenames", "60"]
     if settings.http_proxy:
         command.extend(["--proxy", settings.http_proxy])
     if parsed_input.username:
