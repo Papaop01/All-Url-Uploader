@@ -6,6 +6,7 @@ import os
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiohttp import web
 
@@ -59,8 +60,10 @@ async def run() -> None:
 
     bot = Bot(
         token=settings.bot_token,
+        session=AiohttpSession(timeout=300),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
+
     dispatcher = create_dispatcher(settings)
 
     logging.getLogger(__name__).info(
